@@ -1,0 +1,45 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: astrashop_app
+    volumes:
+      - ./src/laravel:/var/www
+    networks:
+      - astrashop
+
+  nginx:
+    image: nginx:alpine
+    container_name: astrashop_nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./src/laravel:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - astrashop
+
+  db:
+    image: mysql:8.4
+    container_name: astrashop_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: astrashop
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: astrashop
+      MYSQL_PASSWORD: astrashop
+    ports:
+      - "3307:3306"
+    volumes:
+      - astrashop_mysql:/var/lib/mysql
+    networks:
+      - astrashop
+
+networks:
+  astrashop:
+
+volumes:
+  astrashop_mysql:
